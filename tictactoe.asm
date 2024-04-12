@@ -112,7 +112,7 @@ game_draw:
     jmp end_turn
 
 check_draw:
-    push ebp
+    push ebp                    ; check_draw(char* board)
     mov ebp, esp
 
     push dword [ebp + 8]
@@ -252,7 +252,7 @@ no_match:
     ret
 
 update_board:
-    push ebp                ; update_board(int number_of_square, char player, char* squares)
+    push ebp                ; update_board(int offset, char player, char* board)
     mov ebp, esp
 
     mov ebx, [ebp + 16]
@@ -322,7 +322,7 @@ invalid_input:
     jmp get_valid_input
 
 print_which_player:
-    push ebp
+    push ebp                    ; print_which_player(char player)
     mov ebp, esp
 
     push dword [ebp + 8]
@@ -334,7 +334,7 @@ print_which_player:
     ret
 
 print_board:
-    push ebp                ; print_board(char* values)
+    push ebp                    ; print_board(char* board)
     mov ebp, esp
 
     push dword [ebp + 8]
@@ -360,10 +360,10 @@ print_one_line:
     ret
 
 print_line_with_value:
-    push ebp
+    push ebp                    ; print_line_with_value(int num_of_line, char* board)
     mov ebp, esp
 
-    mov ebx, [ebp + 12]             ; print_line_with_value(int num_of_line, char* values)
+    mov ebx, [ebp + 12]
     push dword [ebp + 8]
     cmp byte [esp], 3
     je print_first_line
@@ -432,11 +432,10 @@ print_last_line:
     jmp finish_print_line_with_value
 
 initialize_board:
-    push ebp
+    push ebp                    ; initialize_board(char* board)
     mov ebp, esp
 
     mov ebx, [ebp + 8]
-    mov byte [ebx + 9], 0
     mov ecx, 8
 assign_value:
     push ecx
@@ -450,8 +449,8 @@ assign_value:
     ret
 
 print_ping:
-    push ebp
-    mov ebp, esp
+    push ebp                    ; print_ping()
+    mov ebp, esp                ; for debugging
 
     push ping
     call _printf
