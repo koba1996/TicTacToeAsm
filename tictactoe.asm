@@ -3,13 +3,13 @@ section .data
     separator_line: db ' _|_____|_____|_____|_', 10, 0
     regular_line: db '  |     |     |     | ', 10, 0
     line_with_value: db ' %c|  %c  |  %c  |  %c  | ', 10, 0
-    which_player: db ' Next move is Player %c', 10, 0
-    player_won: db ' Player %c won the game!', 0
-    draw_msg: db ' It is a draw!', 0
+    which_player: db 'Next move is Player %c', 10, 0
+    player_won: db 'Player %c won the game!', 0
+    draw_msg: db 'It is a draw!', 0
     string_sign: db '%s', 0
-    invalid_input_msg: db ' Invalid input, try again! (valid is "a1", "b2", etc.)', 10, ' ', 0
-    occupied_square_msg: db ' That square is already occupied, try again!', 10, ' ', 0
-    next_coordinate: db ' Please provide the coordinates of your next move!', 10, ' ', 0
+    invalid_input_msg: db 'Invalid input, try again! (valid is "a1", "b2", etc.)', 10, 0
+    occupied_square_msg: db 'That square is already occupied, try again!', 10, 0
+    next_coordinate: db 'Please provide the coordinates of your next move!', 10, 0
     ping: db 'ping', 10, 0
 
 section .text
