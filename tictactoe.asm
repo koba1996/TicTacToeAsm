@@ -5,10 +5,11 @@ section .data
     line_with_value: db ' %c|  %c  |  %c  |  %c  | ', 10, 0
     which_player: db ' Next move is Player %c', 10, 0
     player_won: db ' Player %c won the game!', 0
+    draw_msg: db ' It is a draw!', 0
     string_sign: db '%s', 0
     invalid_input_msg: db ' Invalid input, try again! (valid is "a1", "b2", etc.)', 10, 0
     occupied_square_msg: db ' That square is already occupied, try again!', 10, 0
-    next_coordinate: db ' Please provide the coordinates of your next move!', 10, 0
+    next_coordinate: db ' Please provide the coordinates of your next move!', 10, ' ', 0
     ping: db 'ping', 10, 0
 
 section .text
@@ -22,25 +23,30 @@ section .text
 _game:
     push ebp
     mov ebp, esp
-
-    push 16
+    push 12
     call _malloc
     add esp, 4
     push eax
     call initialize_board
     call start_game
-end:
     push eax
     push dword [esp + 4]
     call print_board
     add esp, 4
+    cmp dword [esp], ' '
+    je end_draw
     push player_won
+end:
     call _printf
     add esp, 8
     call _free
     add esp, 4
     pop ebp
     ret
+
+end_draw:
+    push draw_msg
+    jmp end
 
 start_game:
     push ebp                    ; start_game(char* board)
@@ -51,6 +57,8 @@ one_turn:
     call one_turn_for_player
     cmp eax, 1
     je game_over
+    cmp eax, 2
+    je game_over_draw
     add esp, 4
     push dword 'x'
     call one_turn_for_player
@@ -63,6 +71,10 @@ game_over:
     add esp, 4
     pop ebp
     ret
+
+game_over_draw:
+    mov dword [esp], ' '
+    jmp game_over
 
 one_turn_for_player:
     push ebp                    ; one_turn_for_player(char player, char* board)
@@ -77,10 +89,53 @@ one_turn_for_player:
     call update_board
     add esp, 4
     call check_win
+    cmp eax, 1
+    je game_won
+    add esp, 4
+    call check_draw
+    cmp eax, 1
+    je game_draw
+    add esp, 4
+    mov eax, 0
+end_turn:
+    pop ebp
+    ret
+
+game_won:
+    add esp, 8
+    mov eax, 1
+    jmp end_turn
+
+game_draw:
+    add esp, 4
+    mov eax, 2
+    jmp end_turn
+
+check_draw:
+    push ebp
+    mov ebp, esp
+
+    push dword [ebp + 8]
+    push dword ' '
+    mov ecx, 8
+is_square_empty:
+    push ecx
+    call check_one_square
+    cmp eax, 1
+    je _not_draw
+    pop ecx
+    loop is_square_empty
+    mov eax, 1
+draw:
     add esp, 8
 
     pop ebp
     ret
+
+_not_draw:
+    add esp, 4
+    mov eax, 0
+    jmp draw
 
 check_win:
     push ebp                    ; check_win (char player, char* board)
