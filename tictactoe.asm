@@ -7,8 +7,8 @@ section .data
     player_won: db ' Player %c won the game!', 0
     draw_msg: db ' It is a draw!', 0
     string_sign: db '%s', 0
-    invalid_input_msg: db ' Invalid input, try again! (valid is "a1", "b2", etc.)', 10, 0
-    occupied_square_msg: db ' That square is already occupied, try again!', 10, 0
+    invalid_input_msg: db ' Invalid input, try again! (valid is "a1", "b2", etc.)', 10, ' ', 0
+    occupied_square_msg: db ' That square is already occupied, try again!', 10, ' ', 0
     next_coordinate: db ' Please provide the coordinates of your next move!', 10, ' ', 0
     ping: db 'ping', 10, 0
 
@@ -49,7 +49,7 @@ end_draw:
     jmp end
 
 start_game:
-    push ebp                    ; start_game(char* board)
+    push ebp                    ; char start_game(char* board)
     mov ebp, esp
     push dword [ebp + 8]
 one_turn:
@@ -77,7 +77,7 @@ game_over_draw:
     jmp game_over
 
 one_turn_for_player:
-    push ebp                    ; one_turn_for_player(char player, char* board)
+    push ebp                    ; int one_turn_for_player(char player, char* board)
     mov ebp, esp
 
     push dword [ebp + 12]
@@ -112,7 +112,7 @@ game_draw:
     jmp end_turn
 
 check_draw:
-    push ebp                    ; check_draw(char* board)
+    push ebp                    ; int check_draw(char* board)
     mov ebp, esp
 
     push dword [ebp + 8]
@@ -138,7 +138,7 @@ _not_draw:
     jmp draw
 
 check_win:
-    push ebp                    ; check_win (char player, char* board)
+    push ebp                    ; int check_win (char player, char* board)
     mov ebp, esp
 
     push dword [ebp + 12]
@@ -212,7 +212,7 @@ check_top_rights:
     jmp won
 
 check_one_combination:
-    push ebp                    ; check_one_combination(int first, int second, int third, char player, char* board)
+    push ebp                    ; int check_one_combination(int first, int second, int third, char player, char* board)
     mov ebp, esp
 
     push dword [ebp + 24]
@@ -236,7 +236,7 @@ no_combination:
     ret
 
 check_one_square:
-    push ebp                    ; check_one_square(int offset, char player, char* board)
+    push ebp                    ; int check_one_square(int offset, char player, char* board)
     mov ebp, esp
 
     mov eax, 0
@@ -252,7 +252,7 @@ no_match:
     ret
 
 update_board:
-    push ebp                ; update_board(int offset, char player, char* board)
+    push ebp                    ; void update_board(int offset, char player, char* board)
     mov ebp, esp
 
     mov ebx, [ebp + 16]
@@ -270,7 +270,7 @@ get_user_input:
     push dword [ebp + 12]       ; because the subroutine before it and after it needs that argument
     push dword 0                ; so instead of popping and pushing player sign again
     push next_coordinate        ; we will just ignore it here
-    call _printf                ; so the signiture is get_user_input(char player, char* board)
+    call _printf                ; so the signiture is int get_user_input(char player, char* board)
     mov dword [esp], 4          ; makes you think... your code is more efficient because you pass an unused argument
     call _malloc
     mov [esp], eax
@@ -322,7 +322,7 @@ invalid_input:
     jmp get_valid_input
 
 print_which_player:
-    push ebp                    ; print_which_player(char player)
+    push ebp                    ; void print_which_player(char player)
     mov ebp, esp
 
     push dword [ebp + 8]
@@ -334,7 +334,7 @@ print_which_player:
     ret
 
 print_board:
-    push ebp                    ; print_board(char* board)
+    push ebp                    ; void print_board(char* board)
     mov ebp, esp
 
     push dword [ebp + 8]
@@ -360,7 +360,7 @@ print_one_line:
     ret
 
 print_line_with_value:
-    push ebp                    ; print_line_with_value(int num_of_line, char* board)
+    push ebp                    ; void print_line_with_value(int num_of_line, char* board)
     mov ebp, esp
 
     mov ebx, [ebp + 12]
@@ -432,7 +432,7 @@ print_last_line:
     jmp finish_print_line_with_value
 
 initialize_board:
-    push ebp                    ; initialize_board(char* board)
+    push ebp                    ; void initialize_board(char* board)
     mov ebp, esp
 
     mov ebx, [ebp + 8]
@@ -449,7 +449,7 @@ assign_value:
     ret
 
 print_ping:
-    push ebp                    ; print_ping()
+    push ebp                    ; void print_ping()
     mov ebp, esp                ; for debugging
 
     push ping
