@@ -3,11 +3,12 @@ section .data
     separator_line: db ' _|_____|_____|_____|_', 10, 0
     regular_line: db '  |     |     |     | ', 10, 0
     line_with_value: db ' %c|  %c  |  %c  |  %c  | ', 10, 0
-    which_player: db 'Next move is Player %c', 10, 0
+    which_player: db ' Next move is Player %c', 10, 0
+    player_won: db ' Player %c won the game!', 0
     string_sign: db '%s', 0
-    invalid_input_msg: db 'Invalid input, try again! (valid is "a1", "b2", etc.)', 10, 0
-    occupied_square_msg: db 'That square is already occupied, try again!', 10, 0
-    next_coordinate: db 'Please provide the coordinates of your next move!', 10, 0
+    invalid_input_msg: db ' Invalid input, try again! (valid is "a1", "b2", etc.)', 10, 0
+    occupied_square_msg: db ' That square is already occupied, try again!', 10, 0
+    next_coordinate: db ' Please provide the coordinates of your next move!', 10, 0
     ping: db 'ping', 10, 0
 
 section .text
@@ -29,28 +30,42 @@ _game:
     call initialize_board
     call start_game
 end:
+    push eax
+    push dword [esp + 4]
+    call print_board
+    add esp, 4
+    push player_won
+    call _printf
+    add esp, 8
+    call _free
     add esp, 4
     pop ebp
     ret
 
 start_game:
-    push ebp
+    push ebp                    ; start_game(char* board)
     mov ebp, esp
     push dword [ebp + 8]
 one_turn:
     push dword 'o'
     call one_turn_for_player
+    cmp eax, 1
+    je game_over
     add esp, 4
     push dword 'x'
     call one_turn_for_player
+    cmp eax, 1
+    je game_over
     add esp, 4
-    jmp one_turn ; TODO condition
-
+    jmp one_turn
+game_over:
+    pop eax
+    add esp, 4
     pop ebp
     ret
 
 one_turn_for_player:
-    push ebp
+    push ebp                    ; one_turn_for_player(char player, char* board)
     mov ebp, esp
 
     push dword [ebp + 12]
@@ -60,8 +75,124 @@ one_turn_for_player:
     call get_user_input
     push eax
     call update_board
-    add esp, 12
+    add esp, 4
+    call check_win
+    add esp, 8
 
+    pop ebp
+    ret
+
+check_win:
+    push ebp                    ; check_win (char player, char* board)
+    mov ebp, esp
+
+    push dword [ebp + 12]
+    push dword [ebp + 8]
+    push dword 4
+    call check_one_square
+    cmp eax, 1
+    je check_middles
+check_a1:
+    mov dword [esp], 0
+    call check_one_square
+    cmp eax, 1
+    je check_bottom_lefts
+check_c3:
+    mov dword [esp], 8
+    call check_one_square
+    cmp eax, 1
+    je check_top_rights
+won:
+    mov esp, ebp
+    pop ebp
+    ret
+
+check_middles:
+    push dword 0
+    push dword 8
+    call check_one_combination  ; a1-c3
+    cmp eax, 1
+    je won
+    mov dword [esp], 7
+    mov dword [esp + 4], 1
+    call check_one_combination  ; a2-c2
+    cmp eax, 1
+    je won
+    mov dword [esp], 6
+    mov dword [esp + 4], 2
+    call check_one_combination  ; a3-c1
+    cmp eax, 1
+    je won
+    mov dword [esp], 5
+    mov dword [esp + 4], 3
+    call check_one_combination  ; b1-b3
+    cmp eax, 1
+    je won
+    add esp, 8
+    jmp check_a1
+
+check_bottom_lefts:
+    push dword 1
+    push dword 2
+    call check_one_combination  ; a1-a3
+    cmp eax, 1
+    je won
+    mov dword [esp], 3
+    mov dword [esp + 4], 6
+    call check_one_combination  ; a1-c1
+    cmp eax, 1
+    je won
+    add esp, 8
+    jmp check_c3
+
+check_top_rights:
+    push dword 7
+    push dword 6
+    call check_one_combination  ; c1-c3
+    cmp eax, 1
+    je won
+    mov dword [esp], 5
+    mov dword [esp + 4], 2
+    call check_one_combination  ; a3-c3
+    jmp won
+
+check_one_combination:
+    push ebp                    ; check_one_combination(int first, int second, int third, char player, char* board)
+    mov ebp, esp
+
+    push dword [ebp + 24]
+    push dword [ebp + 20]
+    push dword [ebp + 16]
+    call check_one_square
+    cmp eax, 1
+    jne no_combination
+    pop eax
+    push dword [ebp + 12]
+    call check_one_square
+    cmp eax, 1
+    jne no_combination
+    pop eax
+    push dword [ebp + 8]
+    call check_one_square
+
+no_combination:
+    add esp, 12
+    pop ebp
+    ret
+
+check_one_square:
+    push ebp                    ; check_one_square(int offset, char player, char* board)
+    mov ebp, esp
+
+    mov eax, 0
+    mov ebx, [ebp + 16]
+    mov edx, [ebp + 12]
+    mov ecx, [ebp + 8]
+    add ebx, ecx
+    cmp byte [ebx], dl
+    jne no_match
+    mov eax, 1
+no_match:
     pop ebp
     ret
 
