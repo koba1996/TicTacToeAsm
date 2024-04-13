@@ -4,12 +4,13 @@ section .data
     regular_line: db '  |     |     |     | ', 10, 0
     line_with_value: db ' %c|  %c  |  %c  |  %c  | ', 10, 0
     which_player: db 'Next move is Player %c', 10, 0
-    player_won: db 'Player %c won the game!', 0
+    player_won: db 'Player %c won the game!', 10, 0
     draw_msg: db 'It is a draw!', 0
     string_sign: db '%s', 0
     invalid_input_msg: db 'Invalid input, try again! (valid is "a1", "b2", etc.)', 10, 0
     occupied_square_msg: db 'That square is already occupied, try again!', 10, 0
     next_coordinate: db 'Please provide the coordinates of your next move!', 10, 0
+    game_over_msg: db 'Press enter to quit the program!', 10, 0
     ping: db 'ping', 10, 0
 
 section .text
@@ -17,6 +18,7 @@ section .text
 
     extern _printf
     extern _scanf
+    extern _getchar
     extern _malloc
     extern _free
 
@@ -38,9 +40,14 @@ _game:
     push player_won
 end:
     call _printf
-    add esp, 8
+    add esp, 4
+    mov dword [esp], game_over_msg
+    call _printf
+    add esp, 4
     call _free
     add esp, 4
+    call _getchar               ; we have an extra character from somewhere, so we call getchar() twice
+    call _getchar               ; the first will swallow the incident char, the second will work as an actual getchar()
     pop ebp
     ret
 
